@@ -4,6 +4,14 @@ const { successResponse, errorResponse } = require("../utils/response");
 const register = async (req, res) => {
   try {
     const data = await authService.register(req.body);
+
+    res.cookie("token", data.token, {
+    httpOnly: true,             
+    secure: true,               
+    sameSite: "strict",         
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return successResponse(res, data, "Registration successful", 201);
   } catch (error) {
     return errorResponse(res, error.message, 400);
