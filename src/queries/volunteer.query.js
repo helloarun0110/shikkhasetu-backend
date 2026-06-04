@@ -161,6 +161,78 @@ const getMyRequests = async (userId) => {
   return rows;
 };
 
+
+
+
+
+
+
+const addClass = async (volunteerProfileId, classId) => {
+  const [result] = await pool.execute(
+    `INSERT INTO volunteer_classes (volunteer_profile_id, class_id)
+     VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE class_id = class_id`,
+    [volunteerProfileId, classId]
+  );
+  return result;
+};
+
+
+const removeClass = async (volunteerProfileId, classId) => {
+  await pool.execute(
+    `DELETE FROM volunteer_classes 
+     WHERE volunteer_profile_id = ? AND class_id = ?`,
+    [volunteerProfileId, classId]
+  );
+};
+
+
+const getFullProfile = async (userId) => {
+
+  const [profileRows] = await pool.execute(
+    `SELECT vp.*, u.full_name, u.email, u.phone, u.profile_picture_url
+     FROM volunteer_profiles vp
+     JOIN users u ON vp.user_id = u.id
+     WHERE vp.user_id = ?`,
+    [userId]
+  );
+
+  const profile = profileRows[0];
+  if (!profile) return null;
+
+
+  const [subjects] = await pool.execute(
+    `SELECT s.id, s.name, vs.skill_level
+     FROM volunteer_subjects vs
+     JOIN subjects s ON vs.subject_id = s.id
+     WHERE vs.volunteer_profile_id = ?`,
+    [profile.id]
+  );
+
+ 
+  const [classes] = await pool.execute(
+    `SELECT c.id, c.name, c.sort_order
+     FROM volunteer_classes vc
+     JOIN classes c ON vc.class_id = c.id
+     WHERE vc.volunteer_profile_id = ?
+      `,
+    [profile.id]
+  );
+
+
+  return {
+    ...profile,
+    subjects,
+    classes,
+  };
+};
+
+
+
+
+
+
+
 module.exports = {
   createProfile,
   getProfileByUserId,
@@ -171,4 +243,7 @@ module.exports = {
   getSubjects,
   addAvailability,
   getMyRequests,
+  addClass,
+  removeClass,
+  getFullProfile,
 };

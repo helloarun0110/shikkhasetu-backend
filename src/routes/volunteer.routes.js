@@ -64,4 +64,16 @@ router.post(
   volunteerController.getMyRequests 
 );
 
+
+
+
+router.get("/my-profile/full", roleMiddleware("volunteer"), volunteerController.getFullProfile);
+
+
+router.post("/classes", roleMiddleware("volunteer"), volunteerController.addClass);
+
+
+router.delete("/classes/:class_id", roleMiddleware("volunteer"), volunteerController.removeClass);
+
+
 module.exports = router;

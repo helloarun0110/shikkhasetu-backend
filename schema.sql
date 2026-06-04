@@ -123,6 +123,43 @@ CREATE TABLE IF NOT EXISTS volunteer_subjects (
 
 
 
+
+CREATE TABLE IF NOT EXISTS classes (
+  id    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name  VARCHAR(50) NOT NULL UNIQUE
+);
+
+
+INSERT INTO classes (name) VALUES
+  ('Class 1'),
+  ('Class 2'),
+  ('Class 3'),
+  ('Class 4'),
+  ('Class 5'),
+  ('Class 6'),
+  ('Class 7'),
+  ('Class 8'),
+  ('Class 9'),
+  ('Class 10'),
+  ('Class 11'),
+  ('Class 12')
+ON DUPLICATE KEY UPDATE name = name;
+
+
+CREATE TABLE IF NOT EXISTS volunteer_classes (
+  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  volunteer_profile_id  INT UNSIGNED NOT NULL,
+  class_id              INT UNSIGNED NOT NULL,
+
+  UNIQUE KEY unique_volunteer_class (volunteer_profile_id, class_id),
+
+  FOREIGN KEY (volunteer_profile_id) REFERENCES volunteer_profiles(id) ON DELETE CASCADE,
+  FOREIGN KEY (class_id)             REFERENCES classes(id)            ON DELETE CASCADE
+);
+
+
+
+
 CREATE TABLE IF NOT EXISTS volunteer_availability (
   id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   volunteer_profile_id  INT UNSIGNED NOT NULL,
@@ -313,4 +350,3 @@ CREATE TABLE IF NOT EXISTS volunteer_reviews (
   FOREIGN KEY (organizer_profile_id)  REFERENCES organizer_profiles(id) ON DELETE CASCADE,
   FOREIGN KEY (volunteer_profile_id)  REFERENCES volunteer_profiles(id) ON DELETE CASCADE
 );
-

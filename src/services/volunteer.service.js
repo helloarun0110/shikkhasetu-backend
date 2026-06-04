@@ -75,6 +75,29 @@ const getMyRequests = async (userId) => {
   return await volunteerQuery.getMyRequests(userId);
 };
 
+
+
+const addClass = async (userId, classId) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Volunteer profile not found");
+  return await volunteerQuery.addClass(profile.id, classId);
+};
+
+const removeClass = async (userId, classId) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Volunteer profile not found");
+  return await volunteerQuery.removeClass(profile.id, classId);
+};
+
+const getFullProfile = async (userId) => {
+  const profile = await volunteerQuery.getFullProfile(userId);
+  if (!profile) throw new Error("Profile not found");
+  return profile;
+};
+
+
+
+
 module.exports = {
   createProfile,
   getProfile,
@@ -84,4 +107,7 @@ module.exports = {
   addSubject,
   addAvailability,
   getMyRequests,
+  addClass,
+  removeClass,
+  getFullProfile,
 };

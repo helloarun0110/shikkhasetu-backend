@@ -79,6 +79,42 @@ const getMyRequests = async (req, res) => {
   }
 };
 
+
+
+
+const getFullProfile = async (req, res) => {
+  try {
+    const profile = await volunteerService.getFullProfile(req.user.id);
+    return successResponse(res, profile);
+  } catch (error) {
+    return errorResponse(res, error.message, 404);
+  }
+};
+
+const addClass = async (req, res) => {
+  try {
+    const { class_id } = req.body;
+    if (!class_id) return errorResponse(res, "class_id is required", 400);
+    await volunteerService.addClass(req.user.id, class_id);
+    return successResponse(res, null, "Class added", 201);
+  } catch (error) {
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+const removeClass = async (req, res) => {
+  try {
+    await volunteerService.removeClass(req.user.id, req.params.class_id);
+    return successResponse(res, null, "Class removed");
+  } catch (error) {
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+
+
+
+
 module.exports = {
   createProfile,
   getMyProfile,
@@ -88,4 +124,7 @@ module.exports = {
   addSubject,
   addAvailability,
   getMyRequests,
+  addClass,
+  removeClass,
+  getFullProfile,
 };
