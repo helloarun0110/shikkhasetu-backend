@@ -7,13 +7,31 @@ const roleMiddleware = require("../middlewares/role.middleware");
 
 router.use(authMiddleware);
 
+// CREATE REQUEST (organizer)
+router.post("/", roleMiddleware("organizer"), requestController.createRequest);
 
+// GET SINGLE REQUEST
 router.get("/:id", requestController.getRequest);
 
+// ACCEPT REQUEST (volunteer)
+router.post(
+  "/:id/accept",
+  roleMiddleware("volunteer"),
+  requestController.acceptRequest,
+);
 
-router.post("/:id/accept", roleMiddleware("volunteer"), requestController.acceptRequest);
+// REJECT REQUEST (volunteer)
+router.post(
+  "/:id/reject",
+  roleMiddleware("volunteer"),
+  requestController.rejectRequest,
+);
 
-
-router.post("/:id/reject", roleMiddleware("volunteer"), requestController.rejectRequest);
+// CANCEL REQUEST (organizer)
+router.post(
+  "/:id/cancel",
+  roleMiddleware("organizer"),
+  requestController.cancelRequest
+);
 
 module.exports = router;

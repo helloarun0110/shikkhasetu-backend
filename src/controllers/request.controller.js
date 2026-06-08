@@ -21,20 +21,35 @@ const getRequest = async (req, res) => {
 
 const acceptRequest = async (req, res) => {
   try {
-    const data = await requestService.acceptRequest(req.params.id, req.user.id);
-    return successResponse(res, data, "Request accepted and session created");
+    await requestService.acceptRequest(req.params.id);
+    return successResponse(res, null, "Request accepted");
   } catch (error) {
-    return errorResponse(res, error.message, 400);
+    return errorResponse(res, error.message);
   }
 };
 
 const rejectRequest = async (req, res) => {
   try {
-    const data = await requestService.rejectRequest(req.params.id, req.user.id);
-    return successResponse(res, data);
+    await requestService.rejectRequest(req.params.id);
+    return successResponse(res, null, "Request rejected");
   } catch (error) {
-    return errorResponse(res, error.message, 400);
+    return errorResponse(res, error.message);
   }
 };
 
-module.exports = { createRequest, getRequest, acceptRequest, rejectRequest };
+const cancelRequest = async (req, res) => {
+  try {
+    await requestService.cancelRequest(req.params.id);
+    return successResponse(res, null, "Request cancelled");
+  } catch (error) {
+    return errorResponse(res, error.message);
+  }
+};
+
+module.exports = {
+  createRequest,
+  getRequest,
+  acceptRequest,
+  rejectRequest,
+  cancelRequest,
+};

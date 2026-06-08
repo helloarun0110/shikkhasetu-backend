@@ -7,14 +7,14 @@ const { validateRegister, validateLogin } = require("../validations/auth.validat
 
 
 router.post("/register", validateRegister, authController.register);
-
-
 router.post("/login", validateLogin, authController.login);
-
-
 router.get("/me", authMiddleware, authController.getMe);
 
+router.put("/profile", authMiddleware, authController.updateUserProfile);
+router.put("/password", authMiddleware, authController.updatePassword);
+
 module.exports = router;
+
 
 
 

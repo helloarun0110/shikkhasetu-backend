@@ -10,24 +10,12 @@ const {
   validateSubject,
 } = require("../validations/volunteer.validation");
 
-
-router.get("/", volunteerController.getVolunteers);
-
-
 router.use(authMiddleware);
 
-
-router.get("/my-profile", roleMiddleware("volunteer"), volunteerController.getMyProfile);
-
-
-router.get("/requests", roleMiddleware("volunteer"), volunteerController.getMyRequests);
-
-
-router.post(
-  "/profile",
+router.get(
+  "/my-profile/full",
   roleMiddleware("volunteer"),
-  validateVolunteerProfile,
-  volunteerController.createProfile
+  volunteerController.getFullProfile,
 );
 
 
@@ -35,45 +23,77 @@ router.put(
   "/profile",
   roleMiddleware("volunteer"),
   validateVolunteerProfile,
-  volunteerController.updateProfile
+  volunteerController.updateProfile,
 );
 
+router.get("/", volunteerController.getFilteredVolunteers);
 
-router.put("/open-status", roleMiddleware("volunteer"), volunteerController.updateOpenStatus);
+router.get(
+  "/requests",
+  roleMiddleware("volunteer"),
+  volunteerController.getMyRequests,
+);
 
+router.get(
+  "/accepted",
+  roleMiddleware("volunteer"),
+  volunteerController.getAcceptedRequests,
+);
 
 router.post(
   "/subjects",
   roleMiddleware("volunteer"),
   validateSubject,
-  volunteerController.addSubject
+  volunteerController.addSubject,
 );
-
 
 router.post(
   "/availability",
   roleMiddleware("volunteer"),
   validateAvailability,
-  volunteerController.addAvailability
+  volunteerController.addAvailability,
 );
-
 
 router.post(
-  "/requests/:id/accept",
+  "/classes",
   roleMiddleware("volunteer"),
-  volunteerController.getMyRequests 
+  volunteerController.addClass,
 );
 
+router.delete(
+  "/classes/:class_id",
+  roleMiddleware("volunteer"),
+  volunteerController.removeClass,
+);
 
+router.delete(
+  "/subjects/:subject_id",
+  roleMiddleware("volunteer"),
+  volunteerController.removeSubject,
+);
+router.delete(
+  "/availability/:availability_id",
+  roleMiddleware("volunteer"),
+  volunteerController.removeAvailability,
+);
 
+router.put(
+  "/availability/:availability_id",
+  roleMiddleware("volunteer"),
+  volunteerController.updateAvailability,
+);
 
-router.get("/my-profile/full", roleMiddleware("volunteer"), volunteerController.getFullProfile);
+router.get("/classes/:volunteer_id", volunteerController.getVolunteerClasses);
+router.get("/subjects/:volunteer_id", volunteerController.getVolunteerSubjects);
+router.get(
+  "/availability/:volunteer_id",
+  volunteerController.getVolunteerAvailability,
+);
 
-
-router.post("/classes", roleMiddleware("volunteer"), volunteerController.addClass);
-
-
-router.delete("/classes/:class_id", roleMiddleware("volunteer"), volunteerController.removeClass);
-
+router.get(
+  "/dashboard",
+  roleMiddleware("volunteer"),
+  volunteerController.getDashboardStats,
+);
 
 module.exports = router;

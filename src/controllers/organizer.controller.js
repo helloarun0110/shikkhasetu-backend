@@ -1,12 +1,15 @@
 const organizerService = require("../services/organizer.service");
 const { successResponse, errorResponse } = require("../utils/response");
 
-const createProfile = async (req, res) => {
+
+const getOrganizerRequests = async (req, res) => {
   try {
-    const data = await organizerService.createProfile({ ...req.body, user_id: req.user.id });
-    return successResponse(res, data, "Organizer profile created", 201);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await organizerService.getOrganizerRequests(req.user.id, page, limit);
+    return successResponse(res, result);
   } catch (error) {
-    return errorResponse(res, error.message, 400);
+    return errorResponse(res, error.message);
   }
 };
 
@@ -48,5 +51,5 @@ const updateProfile = async (req, res) => {
 };
 
 
+module.exports = { getOrganizerRequests, getMyProfile, getSentRequests, getDashboardStats, updateProfile };
 
-module.exports = { createProfile, getMyProfile, getSentRequests, getDashboardStats, updateProfile };

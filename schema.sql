@@ -4,7 +4,6 @@ CREATE DATABASE IF NOT EXISTS shikkhasetu;
 USE shikkhasetu;
 
 
-
 CREATE TABLE IF NOT EXISTS users (
   id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   full_name           VARCHAR(100)  NOT NULL,
@@ -194,27 +193,19 @@ CREATE TABLE IF NOT EXISTS volunteer_open_status (
 );
 
 
-
-
-
-
-
 CREATE TABLE IF NOT EXISTS session_requests (
   id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
   organizer_profile_id  INT UNSIGNED NOT NULL,
   volunteer_profile_id  INT UNSIGNED NOT NULL,
+
   subject_id            INT UNSIGNED NOT NULL,
+  class_id              INT UNSIGNED NOT NULL,
 
   title                 VARCHAR(200) NOT NULL,
-  description           TEXT         DEFAULT NULL,
-
-  requested_date        DATE         NOT NULL,
-  start_time            TIME         NOT NULL,
-  end_time              TIME         NOT NULL,
+  description           TEXT DEFAULT NULL,
 
   mode                  ENUM('online', 'offline') NOT NULL,
-  meeting_link          VARCHAR(500) DEFAULT NULL,
 
   status                ENUM(
                           'pending',
@@ -225,17 +216,29 @@ CREATE TABLE IF NOT EXISTS session_requests (
                           'auto_invalidated'
                         ) DEFAULT 'pending',
 
-  expires_at            DATETIME     NOT NULL,
-  responded_at          DATETIME     DEFAULT NULL,
+  expires_at            DATETIME NOT NULL,
+  responded_at          DATETIME DEFAULT NULL,
 
-  created_at            DATETIME     DEFAULT CURRENT_TIMESTAMP,
-  updated_at            DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP
+                        ON UPDATE CURRENT_TIMESTAMP,
 
-  FOREIGN KEY (organizer_profile_id)  REFERENCES organizer_profiles(id)  ON DELETE CASCADE,
-  FOREIGN KEY (volunteer_profile_id)  REFERENCES volunteer_profiles(id)  ON DELETE CASCADE,
-  FOREIGN KEY (subject_id)            REFERENCES subjects(id)            ON DELETE RESTRICT
+  FOREIGN KEY (organizer_profile_id)
+    REFERENCES organizer_profiles(id)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (volunteer_profile_id)
+    REFERENCES volunteer_profiles(id)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (subject_id)
+    REFERENCES subjects(id)
+    ON DELETE RESTRICT,
+
+  FOREIGN KEY (class_id)
+    REFERENCES classes(id)
+    ON DELETE RESTRICT
 );
-
 -- Index for fast overlap queries (used in auto-invalidation)
 CREATE INDEX idx_requests_volunteer_date
   ON session_requests(volunteer_profile_id, requested_date, status);
@@ -251,6 +254,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   organizer_profile_id  INT UNSIGNED NOT NULL,
   volunteer_profile_id  INT UNSIGNED NOT NULL,
   subject_id            INT UNSIGNED NOT NULL,
+  class_id INT UNSIGNED NOT NULL,
 
   session_title         VARCHAR(200) NOT NULL,
   session_date          DATE         NOT NULL,
@@ -270,7 +274,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   FOREIGN KEY (request_id)            REFERENCES session_requests(id)   ON DELETE RESTRICT,
   FOREIGN KEY (organizer_profile_id)  REFERENCES organizer_profiles(id) ON DELETE CASCADE,
   FOREIGN KEY (volunteer_profile_id)  REFERENCES volunteer_profiles(id) ON DELETE CASCADE,
-  FOREIGN KEY (subject_id)            REFERENCES subjects(id)           ON DELETE RESTRICT
+  FOREIGN KEY (subject_id)            REFERENCES subjects(id)           ON DELETE RESTRICT,
+  FOREIGN KEY (class_id)              REFERENCES classes(id)            ON DELETE RESTRICT
 );
 
 
@@ -329,11 +334,6 @@ CREATE TABLE IF NOT EXISTS organizer_saved_volunteers (
 
 
 
-
-
-
-
-
 CREATE TABLE IF NOT EXISTS volunteer_reviews (
   id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   session_id            INT UNSIGNED NOT NULL UNIQUE,
@@ -350,3 +350,11 @@ CREATE TABLE IF NOT EXISTS volunteer_reviews (
   FOREIGN KEY (organizer_profile_id)  REFERENCES organizer_profiles(id) ON DELETE CASCADE,
   FOREIGN KEY (volunteer_profile_id)  REFERENCES volunteer_profiles(id) ON DELETE CASCADE
 );
+
+
+
+SELECT * FROM users ORDER BY id DESC;
+SELECT * FROM volunteer_profiles ORDER BY id DESC;
+SELECT * FROM volunteer_subjects ORDER BY id DESC;
+SELECT * FROM volunteer_classes ORDER BY id DESC;
+SELECT * FROM volunteer_availability ORDER BY id DESC;
