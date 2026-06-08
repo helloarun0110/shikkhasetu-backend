@@ -1,62 +1,21 @@
 const volunteerQuery = require("../queries/volunteer.query");
 const pool = require("../config/db");
-const {createNotification} = require("../utils/notification.helper");
+const { createNotification } = require("../utils/notification.helper");
 
-const createProfile = async (data) => {
-  const existing = await volunteerQuery.getProfileByUserId(data.user_id);
-  if (existing) {
-    throw new Error("Volunteer profile already exists");
-  }
-  return await volunteerQuery.createProfile(data);
+const getVolunteerRequests = async (userId, page, limit) => {
+  return await volunteerQuery.getVolunteerRequests(userId, limit, page);
 };
 
-const getProfile = async (userId) => {
-  const profile = await volunteerQuery.getProfileByUserId(userId);
-  if (!profile) throw new Error("Profile not found");
-  return profile;
+const getVolunteerAcceptedRequests = async (userId, page, limit) => {
+  return await volunteerQuery.getVolunteerAcceptedRequests(userId, limit, page);
 };
 
-const updateProfile = async (userId, data) => {
-  return await volunteerQuery.updateProfile(userId, data);
+const getVolunteerDashboardStats = async (userId) => {
+  return await volunteerQuery.getVolunteerDashboardStats(userId);
 };
 
 const getFilteredVolunteers = async (filters) => {
   return await volunteerQuery.getFilteredVolunteers(filters);
-};
-
-const updateOpenStatus = async (userId, isOpen) => {
-  await volunteerQuery.updateOpenStatus(userId, isOpen);
-
-  if (isOpen){
-
-    const profile = await volunteerQuery.getProfileByUserId(userId);
-    if(!profile) return {open_to_volunteer: isOpen};
-
-    const [organizers] = await pool.execute(
-      `SELECT op.id, u.id AS user_id, u.full_name
-        FROM organizer_profiles op
-        JOIN users u ON op.user_id = u.id
-        WHERE op.district = ?
-        AND u.is_active = TRUE
-      `, [profile.district]
-    );
-
-
-
-
-    for (const org of organizers){
-      await createNotification({
-        user_id: org.user_id,
-        type: "new_open_volunteer",
-        title: "new volunteer available nearby",
-        message: `&{profile.full_name} from &{profile.university_name} is now open to volunteer in &{profile.district}.`,
-        
-      });
-    }
-
-
-  }
-  return { open_to_volunteer: isOpen };
 };
 
 const addSubject = async (userId, subjectId, skillLevel) => {
@@ -68,19 +27,34 @@ const addSubject = async (userId, subjectId, skillLevel) => {
 const addAvailability = async (userId, data) => {
   const profile = await volunteerQuery.getProfileByUserId(userId);
   if (!profile) throw new Error("Volunteer profile not found");
-  return await volunteerQuery.addAvailability({ ...data, volunteer_profile_id: profile.id });
+  return await volunteerQuery.addAvailability({
+    ...data,
+    volunteer_profile_id: profile.id,
+  });
 };
-
-const getMyRequests = async (userId) => {
-  return await volunteerQuery.getMyRequests(userId);
-};
-
-
 
 const addClass = async (userId, classId) => {
   const profile = await volunteerQuery.getProfileByUserId(userId);
   if (!profile) throw new Error("Volunteer profile not found");
   return await volunteerQuery.addClass(profile.id, classId);
+};
+
+const getVolunteerClasses = async (volunteerId) => {
+  const classes = await volunteerQuery.getVolunteerClasses(volunteerId);
+  return classes;
+};
+
+const getVolunteerSubjects = async (volunteerId) => {
+  return await volunteerQuery.getVolunteerSubjects(volunteerId);
+};
+
+const getVolunteerAvailability = async (volunteerId) => {
+  return await volunteerQuery.getVolunteerAvailability(volunteerId);
+};
+
+
+const updateProfile = async (userId, data) => {
+  return await volunteerQuery.updateProfile(userId, data);
 };
 
 const removeClass = async (userId, classId) => {
@@ -95,19 +69,47 @@ const getFullProfile = async (userId) => {
   return profile;
 };
 
+const removeSubject = async (userId, subjectId) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Profile not found");
+  return await volunteerQuery.removeSubject(profile.id, subjectId);
+};
 
+const removeAvailability = async (userId, availabilityId) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Profile not found");
+  return await volunteerQuery.removeAvailability(availabilityId, profile.id);
+};
 
+const updateAvailability = async (userId, availabilityId, data) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Profile not found");
+  return await volunteerQuery.updateAvailability(
+    availabilityId,
+    profile.id,
+    data,
+  );
+};
 
 module.exports = {
-  createProfile,
-  getProfile,
-  updateProfile,
+  getVolunteerRequests,
+  getVolunteerAcceptedRequests,
+  getVolunteerDashboardStats,
   getFilteredVolunteers,
-  updateOpenStatus,
+
   addSubject,
   addAvailability,
-  getMyRequests,
   addClass,
   removeClass,
+  removeSubject,
+  removeAvailability,
+  updateAvailability,
+
+  getVolunteerClasses,
+  getVolunteerSubjects,
+  getVolunteerAvailability,
+
+  updateProfile,
+
   getFullProfile,
 };

@@ -9,13 +9,6 @@ const createUser = async (data) => {
   return result;
 };
 
-const findUserByEmail = async (email) => {
-  const [rows] = await pool.execute(
-    `SELECT * FROM users WHERE email = ?`,
-    [email]
-  );
-  return rows[0];
-};
 
 const findUserById = async (id) => {
   const [rows] = await pool.execute(
@@ -26,7 +19,23 @@ const findUserById = async (id) => {
   return rows[0];
 };
 
-module.exports = { createUser, findUserByEmail, findUserById };
+const updateUserProfile = async (userId, data) => {
+  const [result] = await pool.execute(
+    `UPDATE users SET full_name = ?, phone = ? WHERE id = ?`,
+    [data.full_name, data.phone, userId]
+  );
+  return result;
+};
+
+const updatePassword = async (userId, passwordHash) => {
+  const [result] = await pool.execute(
+    `UPDATE users SET password_hash = ? WHERE id = ?`,
+    [passwordHash, userId]
+  );
+  return result;
+};
+
+module.exports = { createUser, findUserById , updateUserProfile,updatePassword};
 
 
 

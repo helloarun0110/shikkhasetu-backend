@@ -1,10 +1,9 @@
 const organizerQuery = require("../queries/organizer.query");
 
-const createProfile = async (data) => {
-  const existing = await organizerQuery.getProfileByUserId(data.user_id);
-  if (existing) throw new Error("Organizer profile already exists");
-  return await organizerQuery.createProfile(data);
+const getOrganizerRequests = async (userId, page, limit) => {
+  return await organizerQuery.getOrganizerRequests(userId, limit, page);
 };
+
 
 const getProfile = async (userId) => {
   const profile = await organizerQuery.getProfileByUserId(userId);
@@ -26,4 +25,4 @@ const updateProfile = async(userId, data) => {
 }
 
 
-module.exports = { createProfile, getProfile, getSentRequests, getDashboardStats, updateProfile };
+module.exports = { getOrganizerRequests, getProfile, getSentRequests, getDashboardStats, updateProfile };

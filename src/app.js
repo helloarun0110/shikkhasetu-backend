@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./routes/auth.routes");
 const volunteerRoutes = require("./routes/volunteer.routes");
@@ -15,11 +16,17 @@ const errorMiddleware = require("./middlewares/error.middleware");
 require("./utils/scheduler");
 
 const app = express();
+app.use(cookieParser());
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+
+
 
 // Health check
 app.get("/", (req, res) => {

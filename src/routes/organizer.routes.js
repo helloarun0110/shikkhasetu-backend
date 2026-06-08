@@ -12,18 +12,12 @@ router.use(authMiddleware, roleMiddleware("organizer"));
 router.get("/profile", organizerController.getMyProfile);
 
 
-router.post("/profile", organizerController.createProfile);
-
-
-router.put("/profile", organizerController.createProfile);
-
-
 router.post("/request", requestController.createRequest);
 
-
-router.get("/sent-requests", organizerController.getSentRequests);
+router.get("/my-requests", organizerController.getOrganizerRequests);
 
 
 router.get("/dashboard", organizerController.getDashboardStats);
+
 
 module.exports = router;

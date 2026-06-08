@@ -1,23 +1,47 @@
 const volunteerService = require("../services/volunteer.service");
 const { successResponse, errorResponse } = require("../utils/response");
 
-const createProfile = async (req, res) => {
+const getMyRequests = async (req, res) => {
   try {
-    const data = await volunteerService.createProfile({ ...req.body, user_id: req.user.id });
-    return successResponse(res, data, "Profile created", 201);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await volunteerService.getVolunteerRequests(
+      req.user.id,
+      page,
+      limit,
+    );
+    return successResponse(res, result);
   } catch (error) {
-    return errorResponse(res, error.message, 400);
+    return errorResponse(res, error.message);
   }
 };
 
-const getMyProfile = async (req, res) => {
+const getAcceptedRequests = async (req, res) => {
   try {
-    const profile = await volunteerService.getProfile(req.user.id);
-    return successResponse(res, profile);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await volunteerService.getVolunteerAcceptedRequests(
+      req.user.id,
+      page,
+      limit,
+    );
+    return successResponse(res, result);
   } catch (error) {
-    return errorResponse(res, error.message, 404);
+    return errorResponse(res, error.message);
   }
 };
+
+const getDashboardStats = async (req, res) => {
+  try {
+    const stats = await volunteerService.getVolunteerDashboardStats(
+      req.user.id,
+    );
+    return successResponse(res, stats);
+  } catch (error) {
+    return errorResponse(res, error.message);
+  }
+};
+
 
 const updateProfile = async (req, res) => {
   try {
@@ -28,26 +52,24 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const getVolunteers = async (req, res) => {
+const getFilteredVolunteers = async (req, res) => {
   try {
-  
-    const volunteers = await volunteerService.getFilteredVolunteers(req.query);
-    return successResponse(res, volunteers);
-  } catch (error) {
-    return errorResponse(res, error.message);
-  }
-};
+    console.log("GET VOLUNTEERS HIT");
 
-const updateOpenStatus = async (req, res) => {
-  try {
-    const { is_open } = req.body;
-    if (typeof is_open !== "boolean") {
-      return errorResponse(res, "is_open must be a boolean", 400);
-    }
-    const data = await volunteerService.updateOpenStatus(req.user.id, is_open);
-    return successResponse(res, data, `Open status set to ${is_open}`);
-  } catch (error) {
-    return errorResponse(res, error.message, 400);
+    const data = await volunteerService.getFilteredVolunteers(req.query);
+
+    return res.json({
+      success: true,
+      data: data.data,
+      pagination: data.pagination,
+    });
+  } catch (err) {
+    console.error("VOLUNTEER ERROR:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
@@ -69,18 +91,6 @@ const addAvailability = async (req, res) => {
     return errorResponse(res, error.message, 400);
   }
 };
-
-const getMyRequests = async (req, res) => {
-  try {
-    const requests = await volunteerService.getMyRequests(req.user.id);
-    return successResponse(res, requests);
-  } catch (error) {
-    return errorResponse(res, error.message);
-  }
-};
-
-
-
 
 const getFullProfile = async (req, res) => {
   try {
@@ -111,20 +121,88 @@ const removeClass = async (req, res) => {
   }
 };
 
+const getVolunteerClasses = async (req, res) => {
+  try {
+    const data = await volunteerService.getVolunteerClasses(
+      req.params.volunteer_id,
+    );
+    return successResponse(res, data);
+  } catch (err) {
+    return errorResponse(res, err.message);
+  }
+};
 
+const getVolunteerSubjects = async (req, res) => {
+  try {
+    const data = await volunteerService.getVolunteerSubjects(
+      req.params.volunteer_id,
+    );
+    return successResponse(res, data);
+  } catch (err) {
+    return errorResponse(res, err.message);
+  }
+};
 
+const getVolunteerAvailability = async (req, res) => {
+  try {
+    const data = await volunteerService.getVolunteerAvailability(
+      req.params.volunteer_id,
+    );
+    return successResponse(res, data);
+  } catch (err) {
+    return errorResponse(res, err.message);
+  }
+};
 
+const removeSubject = async (req, res) => {
+  try {
+    await volunteerService.removeSubject(req.user.id, req.params.subject_id);
+    return successResponse(res, null, "Subject removed");
+  } catch (error) {
+    return errorResponse(res, error.message);
+  }
+};
+
+const removeAvailability = async (req, res) => {
+  try {
+    await volunteerService.removeAvailability(
+      req.user.id,
+      req.params.availability_id,
+    );
+    return successResponse(res, null, "Availability removed");
+  } catch (error) {
+    return errorResponse(res, error.message);
+  }
+};
+
+const updateAvailability = async (req, res) => {
+  try {
+    await volunteerService.updateAvailability(
+      req.user.id,
+      req.params.availability_id,
+      req.body,
+    );
+    return successResponse(res, null, "Availability updated");
+  } catch (error) {
+    return errorResponse(res, error.message);
+  }
+};
 
 module.exports = {
-  createProfile,
-  getMyProfile,
+  getMyRequests,
+  getAcceptedRequests,
+  getDashboardStats,
   updateProfile,
-  getVolunteers,
-  updateOpenStatus,
+  getFilteredVolunteers,
   addSubject,
   addAvailability,
-  getMyRequests,
   addClass,
+  removeSubject,
+  removeAvailability,
+  updateAvailability,
   removeClass,
   getFullProfile,
+  getVolunteerClasses,
+  getVolunteerSubjects,
+  getVolunteerAvailability,
 };
