@@ -34,12 +34,12 @@ const validateAvailability = (req, res, next) => {
 };
 
 const validateSubject = (req, res, next) => {
-  const { subject_id, skill_level } = req.body;
+  const { subject_names, skill_level } = req.body;
 
-  if (!subject_id) {
+  if (!subject_names || !subject_names.length) {
     return res.status(400).json({
       success: false,
-      message: "subject_id is required",
+      message: "subject_names is required",
     });
   }
 

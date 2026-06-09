@@ -54,8 +54,6 @@ const updateProfile = async (req, res) => {
 
 const getFilteredVolunteers = async (req, res) => {
   try {
-    console.log("GET VOLUNTEERS HIT");
-
     const data = await volunteerService.getFilteredVolunteers(req.query);
 
     return res.json({
@@ -74,10 +72,30 @@ const getFilteredVolunteers = async (req, res) => {
 };
 
 const addSubject = async (req, res) => {
+
+  console.log(" add sub fetched at controller ");
   try {
-    const { subject_id, skill_level } = req.body;
-    await volunteerService.addSubject(req.user.id, subject_id, skill_level);
-    return successResponse(res, null, "Subject added", 201);
+    const { subject_names, skill_level = "intermediate" } = req.body;
+
+    await volunteerService.addSubject(
+      req.user.id,
+      subject_names,
+      skill_level
+    );
+
+    return successResponse(res, null, "Subjects added", 201);
+  } catch (error) {
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+const addClass = async (req, res) => {
+  try {
+    const { class_names } = req.body;
+
+    await volunteerService.addClass(req.user.id, class_names);
+
+    return successResponse(res, null, "Classes added", 201);
   } catch (error) {
     return errorResponse(res, error.message, 400);
   }
@@ -94,6 +112,7 @@ const addAvailability = async (req, res) => {
 
 const getFullProfile = async (req, res) => {
   try {
+
     const profile = await volunteerService.getFullProfile(req.user.id);
     return successResponse(res, profile);
   } catch (error) {
@@ -101,16 +120,6 @@ const getFullProfile = async (req, res) => {
   }
 };
 
-const addClass = async (req, res) => {
-  try {
-    const { class_id } = req.body;
-    if (!class_id) return errorResponse(res, "class_id is required", 400);
-    await volunteerService.addClass(req.user.id, class_id);
-    return successResponse(res, null, "Class added", 201);
-  } catch (error) {
-    return errorResponse(res, error.message, 400);
-  }
-};
 
 const removeClass = async (req, res) => {
   try {

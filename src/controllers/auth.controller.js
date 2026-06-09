@@ -61,7 +61,29 @@ const updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, updateUserProfile, updatePassword };
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return errorResponse(res, "Email is required", 400);
+    await authService.forgotPassword(email);
+    return successResponse(res, null, "Reset link sent to your email");
+  } catch (error) {
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, new_password } = req.body;
+    if (!token || !new_password) return errorResponse(res, "Token and password required", 400);
+    await authService.resetPassword(token, new_password);
+    return successResponse(res, null, "Password reset successful");
+  } catch (error) {
+    return errorResponse(res, error.message, 400);
+  }
+};
+
+module.exports = { register, login, getMe, updateUserProfile, updatePassword , forgotPassword , resetPassword };
 
 
 
