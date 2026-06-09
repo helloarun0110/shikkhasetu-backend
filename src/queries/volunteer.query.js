@@ -1,5 +1,26 @@
 const pool = require("../config/db");
 
+
+const createProfile = async (data) => {
+  const [result] = await pool.execute(
+    `INSERT INTO volunteer_profiles
+     (user_id, university_name, department, academic_year, bio, district, upazila, address, teaching_mode)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.user_id,
+      data.university_name,
+      data.department,
+      data.academic_year || null,
+      data.bio || null,
+      data.district,
+      data.upazila || null,
+      data.address || null,
+      data.teaching_mode || "both",
+    ]
+  );
+  return result;
+};
+
 const getVolunteerRequests = async (userId, limit, page) => {
   const offset = (page - 1) * limit;
 
@@ -262,21 +283,44 @@ const getFilteredVolunteers = async (filters = {}) => {
   };
 };
 
-const addSubject = async (
+const addSubjectsByName = async (
   volunteerProfileId,
-  subjectId,
-  skillLevel = "intermediate",
+  subjectNames,
+  skillLevel,
 ) => {
-  const [result] = await pool.execute(
-    `INSERT INTO volunteer_subjects 
-      (volunteer_profile_id, subject_id, skill_level)
-     VALUES (?, ?, ?)
-     ON DUPLICATE KEY UPDATE 
-      skill_level = VALUES(skill_level)`,
-    [volunteerProfileId, subjectId, skillLevel],
-  );
+  for (const name of subjectNames) {
+    const [rows] = await pool.execute(
+      `SELECT id FROM subjects WHERE name = ?`,
+      [name],
+    );
 
-  return result;
+    if (!rows.length) continue;
+
+    await pool.execute(
+      `INSERT INTO volunteer_subjects 
+        (volunteer_profile_id, subject_id, skill_level)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE skill_level = VALUES(skill_level)`,
+      [volunteerProfileId, rows[0].id, skillLevel],
+    );
+  }
+};
+
+const addClassesByName = async (volunteerProfileId, classNames) => {
+  for (const name of classNames) {
+    const [rows] = await pool.execute(`SELECT id FROM classes WHERE name = ?`, [
+      name,
+    ]);
+
+    if (!rows.length) continue;
+
+    await pool.execute(
+      `INSERT IGNORE INTO volunteer_classes 
+        (volunteer_profile_id, class_id)
+       VALUES (?, ?)`,
+      [volunteerProfileId, rows[0].id],
+    );
+  }
 };
 
 const addAvailability = async (data) => {
@@ -290,17 +334,6 @@ const addAvailability = async (data) => {
       data.start_time,
       data.end_time,
     ],
-  );
-
-  return result;
-};
-
-const addClass = async (volunteerProfileId, classId) => {
-  const [result] = await pool.execute(
-    `INSERT IGNORE INTO volunteer_classes 
-      (volunteer_profile_id, class_id)
-     VALUES (?, ?)`,
-    [volunteerProfileId, classId],
   );
 
   return result;
@@ -335,11 +368,32 @@ const getFullProfile = async (userId) => {
   );
 
   const [classes] = await pool.execute(
-    `SELECT c.id, c.name, c.sort_order
-     FROM volunteer_classes vc
-     JOIN classes c ON vc.class_id = c.id
-     WHERE vc.volunteer_profile_id = ?
-      `,
+    `SELECT c.id, c.name
+   FROM volunteer_classes vc
+   JOIN classes c ON vc.class_id = c.id
+   WHERE vc.volunteer_profile_id = ?`,
+    [profile.id],
+  );
+
+  const [availability] = await pool.execute(
+    `SELECT
+        id,
+        day_of_week,
+        start_time,
+        end_time,
+        is_active
+     FROM volunteer_availability
+     WHERE volunteer_profile_id = ?
+     ORDER BY FIELD(
+        day_of_week,
+        'Saturday',
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday'
+     )`,
     [profile.id],
   );
 
@@ -347,7 +401,19 @@ const getFullProfile = async (userId) => {
     ...profile,
     subjects,
     classes,
+    availability,
   };
+};
+
+const getProfileByUserId = async (userId) => {
+  const [rows] = await pool.execute(
+    `SELECT *
+     FROM volunteer_profiles
+     WHERE user_id = ?`,
+    [userId],
+  );
+
+  return rows[0] || null;
 };
 
 const getVolunteerSubjects = async (volunteerId) => {
@@ -440,6 +506,7 @@ const updateAvailability = async (availabilityId, volunteerProfileId, data) => {
 };
 
 module.exports = {
+  createProfile,
   getVolunteerRequests,
   getVolunteerAcceptedRequests,
   getFilteredVolunteers,
@@ -447,9 +514,10 @@ module.exports = {
   getVolunteerClasses,
   getVolunteerSubjects,
   getVolunteerAvailability,
-  addSubject,
+  getProfileByUserId,
+  addSubjectsByName,
   addAvailability,
-  addClass,
+  addClassesByName,
   removeAvailability,
   updateAvailability,
   removeSubject,

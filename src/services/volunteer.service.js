@@ -18,10 +18,23 @@ const getFilteredVolunteers = async (filters) => {
   return await volunteerQuery.getFilteredVolunteers(filters);
 };
 
-const addSubject = async (userId, subjectId, skillLevel) => {
+const addSubject = async (userId, subjectNames, skillLevel) => {
+    console.log(" add sub fetched at service");
   const profile = await volunteerQuery.getProfileByUserId(userId);
   if (!profile) throw new Error("Volunteer profile not found");
-  return await volunteerQuery.addSubject(profile.id, subjectId, skillLevel);
+ console.log(" add sub fetched at service");
+  return await volunteerQuery.addSubjectsByName(
+    profile.id,
+    subjectNames,
+    skillLevel
+  );
+};
+
+const addClass = async (userId, classNames) => {
+  const profile = await volunteerQuery.getProfileByUserId(userId);
+  if (!profile) throw new Error("Volunteer profile not found");
+
+  return await volunteerQuery.addClassesByName(profile.id, classNames);
 };
 
 const addAvailability = async (userId, data) => {
@@ -31,12 +44,6 @@ const addAvailability = async (userId, data) => {
     ...data,
     volunteer_profile_id: profile.id,
   });
-};
-
-const addClass = async (userId, classId) => {
-  const profile = await volunteerQuery.getProfileByUserId(userId);
-  if (!profile) throw new Error("Volunteer profile not found");
-  return await volunteerQuery.addClass(profile.id, classId);
 };
 
 const getVolunteerClasses = async (volunteerId) => {
@@ -64,6 +71,7 @@ const removeClass = async (userId, classId) => {
 };
 
 const getFullProfile = async (userId) => {
+  
   const profile = await volunteerQuery.getFullProfile(userId);
   if (!profile) throw new Error("Profile not found");
   return profile;

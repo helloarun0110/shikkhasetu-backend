@@ -9,6 +9,7 @@ const volunteerRoutes = require("./routes/volunteer.routes");
 const organizerRoutes = require("./routes/organizer.routes");
 const requestRoutes = require("./routes/request.routes");
 const sessionRoutes = require("./routes/session.routes");
+const publicRoutes = require("./routes/public.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const errorMiddleware = require("./middlewares/error.middleware");
 
@@ -40,6 +41,7 @@ app.use("/api/organizers", organizerRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/public", publicRoutes);
 
 // Global error handler (must be last)
 app.use(errorMiddleware);

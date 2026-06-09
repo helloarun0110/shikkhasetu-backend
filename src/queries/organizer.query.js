@@ -1,5 +1,28 @@
 const pool = require("../config/db");
 
+const createProfile = async (data) => {
+  const [result] = await pool.execute(
+    `INSERT INTO organizer_profiles
+     (user_id, institution_name, institution_type, description, district, upazila,
+      address, website_url, verification_document_url, contact_person_name, contact_person_designation)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.user_id,
+      data.institution_name,
+      data.institution_type || null,
+      data.description || null,
+      data.district,
+      data.upazila || null,
+      data.address || null,
+      data.website_url || null,
+      data.verification_document_url || null,
+      data.contact_person_name || null,
+      data.contact_person_designation || null,
+    ]
+  );
+  return result;
+};
+
 
 const getOrganizerRequests = async (userId, limit, page) => {
   const offset = (page - 1) * limit;
@@ -142,4 +165,4 @@ const getDashboardStats = async (userId) => {
   return rows[0];
 };
 
-module.exports = { getOrganizerRequests, getProfileByUserId, getSentRequests, getDashboardStats, updateProfile };
+module.exports = { createProfile,getOrganizerRequests, getProfileByUserId, getSentRequests, getDashboardStats, updateProfile };

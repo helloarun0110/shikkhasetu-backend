@@ -18,7 +18,6 @@ router.get(
   volunteerController.getFullProfile,
 );
 
-
 router.put(
   "/profile",
   roleMiddleware("volunteer"),
@@ -48,16 +47,16 @@ router.post(
 );
 
 router.post(
+  "/classes",
+  roleMiddleware("volunteer"),
+  volunteerController.addClass,
+);
+
+router.post(
   "/availability",
   roleMiddleware("volunteer"),
   validateAvailability,
   volunteerController.addAvailability,
-);
-
-router.post(
-  "/classes",
-  roleMiddleware("volunteer"),
-  volunteerController.addClass,
 );
 
 router.delete(
